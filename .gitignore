@@ -1,0 +1,17 @@
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.log
+MidnightLauncherLogs.txt
+accounts.json
+config.json
+game/

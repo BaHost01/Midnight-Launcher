@@ -1,0 +1,46 @@
+name: Build and Release Midnight Launcher
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Publish Win-x64
+      run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/win-x64
+      
+    - name: Install WiX
+      run: |
+        dotnet tool install --global WixToolset.DotNet.Tool
+        
+    - name: Create MSI
+      run: |
+        # Use WiX 3 commands if available on runner, or WiX 4/5 via dotnet tool
+        # For simplicity on windows-latest, we use the pre-installed WiX 3
+        candle.exe MidnightLauncher.wxs -o MidnightLauncher.wixobj
+        light.exe MidnightLauncher.wixobj -o MidnightLauncher.msi
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          MidnightLauncher.msi
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
