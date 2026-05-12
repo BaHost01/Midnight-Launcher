@@ -33,3 +33,18 @@ Midnight Launcher uses `CmlLib.Core`. You can refer to the [CmlLib.Core Document
 - Microsoft/Xbox Live Authentication.
 - Custom JVM arguments.
 - Server auto-connect.
+
+## Antivirus & False Positives
+Since Midnight Launcher is a specialized tool, it might occasionally be flagged by Antivirus (AV) software as a "False Positive."
+
+### How we minimize flags:
+1. **Metadata:** Every build includes Company (CStudioss) and Description metadata.
+2. **Checksums:** Every GitHub Release includes a `checksums.txt` with SHA-256 hashes for integrity verification.
+3. **Open Source:** The code is transparent and auditable.
+
+### Proactive Whitelisting:
+To permanently clear flags for your users, you should submit the `.exe` or `.msi` to major AV vendors:
+- **Microsoft Security Intelligence:** [Submit Here](https://www.microsoft.com/en-us/wdsi/filesubmission) (Select "Developer" and "Incorrectly detected as malware").
+- **VirusTotal:** Upload your file to [VirusTotal](https://www.virustotal.com/) to see which engines flag it and use their contact forms to report false positives.
+- **Norton/Avast/etc:** Each major vendor has a "False Positive Submission" form on their website.
+

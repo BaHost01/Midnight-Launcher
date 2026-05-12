@@ -51,6 +51,12 @@ jobs:
         Compress-Archive -Path ./publish/win-x64/* -DestinationPath MidnightLauncher-win-x64.zip
       shell: pwsh
 
+    - name: Generate Checksums
+      run: |
+        echo "### SHA-256 Checksums" > checksums.txt
+        Get-FileHash -Path *.msi, *.zip -Algorithm SHA256 | ForEach-Object { "$($_.Hash)  $($_.Path | Split-Path -Leaf)" } >> checksums.txt
+      shell: pwsh
+
     - name: Create Release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
@@ -58,6 +64,7 @@ jobs:
         files: |
           *.msi
           *.zip
+          checksums.txt
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
