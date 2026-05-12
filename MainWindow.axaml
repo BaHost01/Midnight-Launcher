@@ -38,6 +38,18 @@
                             <TextBlock Text="Accounts" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
+                    <ListBoxItem x:Name="NewsNav">
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <Image Source="avares://Midnight_Launcher/Assets/news.png" Width="20" Height="20"/>
+                            <TextBlock Text="News" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem x:Name="ModsNav">
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <Image Source="avares://Midnight_Launcher/Assets/modrinth.png" Width="20" Height="20"/>
+                            <TextBlock Text="Mods" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
                     <ListBoxItem x:Name="SettingsNav">
                         <StackPanel Orientation="Horizontal" Spacing="15">
                             <Image Source="avares://Midnight_Launcher/Assets/settings.png" Width="20" Height="20"/>
@@ -105,7 +117,74 @@
                             </Grid>
                         </StackPanel>
                     </Border>
+
+                    <Border Background="#1E1E1E" Padding="20" CornerRadius="8">
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Experimental Settings" FontWeight="Bold" FontSize="16" Foreground="#FFCC00"/>
+                            <Separator Background="#2A2A2A"/>
+                            <TextBlock Text="Note: This is a scrapped, modern UI that is less stable. Full compatibility is not guaranteed, and errors on it will not be supported." 
+                                       FontSize="12" Foreground="#AAAAAA" TextWrapping="Wrap"/>
+                            
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="Enable Experimental Modern UI" VerticalAlignment="Center"/>
+                                <ToggleSwitch x:Name="ExperimentalUiToggle" Grid.Column="1"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
+
+                <!-- News Content -->
+                <Grid x:Name="NewsView" Grid.Row="1" RowDefinitions="*, Auto" IsVisible="False">
+                    <ListBox x:Name="NewsListBox" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#1E1E1E" Margin="0,5" Padding="15" CornerRadius="8">
+                                    <Grid ColumnDefinitions="Auto, *">
+                                        <Image Source="{Binding ImageUrl}" Width="120" Height="70" Stretch="UniformToFill" Margin="0,0,15,0" Grid.Column="0"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Date}" FontSize="12" Foreground="#AAAAAA" Margin="0,5"/>
+                                            <TextBlock Text="{Binding Summary}" FontSize="13" TextWrapping="Wrap" MaxLines="2"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                    <Grid x:Name="NewsArticleOverlay" IsVisible="False" Background="#121212" Grid.RowSpan="2" Margin="-30">
+                        <Grid RowDefinitions="Auto, *">
+                            <Button x:Name="CloseNewsButton" Content="Back to News" Margin="20" HorizontalAlignment="Left" Grid.Row="0"/>
+                            <TextBlock Text="Full article opening in browser..." HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <!-- Mods Content -->
+                <Grid x:Name="ModsView" Grid.Row="1" RowDefinitions="Auto, *" IsVisible="False">
+                    <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,20">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBox x:Name="ModSearchTextBox" Watermark="Search Modrinth..." Grid.Column="0"/>
+                            <Button x:Name="SearchModsButton" Content="Search" Margin="10,0,0,0" Grid.Column="1"/>
+                        </Grid>
+                    </StackPanel>
+                    <ListBox x:Name="ModsListBox" Grid.Row="1" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#1E1E1E" Margin="0,5" Padding="15" CornerRadius="8">
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        <Image Source="{Binding IconUrl}" Width="60" Height="60" Margin="0,0,15,0" Grid.Column="0"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16"/>
+                                            <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#AAAAAA" TextWrapping="Wrap" MaxLines="1"/>
+                                        </StackPanel>
+                                        <Button x:Name="InstallModButton" Content="Install" Grid.Column="2" VerticalAlignment="Center" Padding="15,8" Background="#1BD96A" Foreground="Black" FontWeight="Bold"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
 
                 <!-- Footer (Play Button & Progress) -->
                 <StackPanel Grid.Row="2" Spacing="15" Margin="0,20,0,0">
