@@ -17,6 +17,14 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
         
     - name: Restore dependencies
       run: dotnet restore
@@ -27,11 +35,15 @@ jobs:
     - name: Install WiX
       run: |
         dotnet tool install --global wix
+      env:
+        WIX_ACCEPT_OSMF_EULA: true
         
     - name: Create MSI
       run: |
         # Use WiX 4+ 'wix build' command
         wix build MidnightLauncher.wxs -o MidnightLauncher.msi
+      env:
+        WIX_ACCEPT_OSMF_EULA: true
       
     - name: Create Release
       uses: softprops/action-gh-release@v2
