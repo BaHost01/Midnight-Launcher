@@ -172,23 +172,30 @@
             <Grid.Styles>
                 <Style Selector="Grid#BrandingOverlay">
                     <Style.Animations>
-                        <Animation Duration="0:0:3" FillMode="Forward">
+                        <Animation Duration="0:0:3" FillMode="Forward" Easing="CubicEaseOut">
                             <KeyFrame Cue="0%">
                                 <Setter Property="Opacity" Value="0.0"/>
+                                <Setter Property="TranslateTransform.Y" Value="50"/>
                             </KeyFrame>
                             <KeyFrame Cue="20%">
                                 <Setter Property="Opacity" Value="1.0"/>
+                                <Setter Property="TranslateTransform.Y" Value="0"/>
                             </KeyFrame>
                             <KeyFrame Cue="80%">
                                 <Setter Property="Opacity" Value="1.0"/>
+                                <Setter Property="TranslateTransform.Y" Value="0"/>
                             </KeyFrame>
                             <KeyFrame Cue="100%">
                                 <Setter Property="Opacity" Value="0.0"/>
+                                <Setter Property="TranslateTransform.Y" Value="-50"/>
                             </KeyFrame>
                         </Animation>
                     </Style.Animations>
                 </Style>
             </Grid.Styles>
+            <Grid.RenderTransform>
+                <TranslateTransform />
+            </Grid.RenderTransform>
         </Grid>
     </Grid>
 </Window>
