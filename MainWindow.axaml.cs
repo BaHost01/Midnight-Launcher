@@ -101,6 +101,13 @@ public partial class MainWindow : Window
         await Task.Delay(200); 
         
         LoadingOverlay.IsVisible = false;
+        Log("Data loaded. Showing branding animation.");
+
+        // Show Branding Animation
+        BrandingOverlay.IsVisible = true;
+        await Task.Delay(3100); // Slightly more than the 3s animation
+        BrandingOverlay.IsVisible = false;
+
         Log("Launcher initialized.");
     }
 

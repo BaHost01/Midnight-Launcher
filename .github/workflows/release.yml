@@ -26,14 +26,12 @@ jobs:
       
     - name: Install WiX
       run: |
-        dotnet tool install --global WixToolset.DotNet.Tool
+        dotnet tool install --global wix
         
     - name: Create MSI
       run: |
-        # Use WiX 3 commands if available on runner, or WiX 4/5 via dotnet tool
-        # For simplicity on windows-latest, we use the pre-installed WiX 3
-        candle.exe MidnightLauncher.wxs -o MidnightLauncher.wixobj
-        light.exe MidnightLauncher.wixobj -o MidnightLauncher.msi
+        # Use WiX 4+ 'wix build' command
+        wix build MidnightLauncher.wxs -o MidnightLauncher.msi
       
     - name: Create Release
       uses: softprops/action-gh-release@v2

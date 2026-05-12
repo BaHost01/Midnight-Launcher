@@ -152,5 +152,43 @@
                 <TextBlock x:Name="LoadingStatus" Text="Preparing Midnight..." HorizontalAlignment="Center" FontSize="16" FontWeight="Light"/>
             </StackPanel>
         </Grid>
+        <!-- Branding Overlay -->
+        <Grid x:Name="BrandingOverlay" Background="#121212" IsVisible="False">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="60">
+                <!-- Made with C++ -->
+                <StackPanel Spacing="15" HorizontalAlignment="Center">
+                    <Image Source="avares://Midnight_Launcher/Assets/cpp_logo.png" Width="80" Height="80"/>
+                    <TextBlock Text="Made With C++" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Made with Love (CStudioss) -->
+                <StackPanel Spacing="15" HorizontalAlignment="Center">
+                    <Image Source="avares://Midnight_Launcher/Assets/cstudioss_logo.png" Width="80" Height="80"/>
+                    <TextBlock Text="Made With Love." FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                    <TextBlock Text="CStudioss" FontSize="12" Foreground="#E91E63" HorizontalAlignment="Center" Margin="0,-10,0,0"/>
+                </StackPanel>
+            </StackPanel>
+            
+            <Grid.Styles>
+                <Style Selector="Grid#BrandingOverlay">
+                    <Style.Animations>
+                        <Animation Duration="0:0:3" FillMode="Forward">
+                            <KeyFrame Cue="0%">
+                                <Setter Property="Opacity" Value="0.0"/>
+                            </KeyFrame>
+                            <KeyFrame Cue="20%">
+                                <Setter Property="Opacity" Value="1.0"/>
+                            </KeyFrame>
+                            <KeyFrame Cue="80%">
+                                <Setter Property="Opacity" Value="1.0"/>
+                            </KeyFrame>
+                            <KeyFrame Cue="100%">
+                                <Setter Property="Opacity" Value="0.0"/>
+                            </KeyFrame>
+                        </Animation>
+                    </Style.Animations>
+                </Style>
+            </Grid.Styles>
+        </Grid>
     </Grid>
 </Window>
