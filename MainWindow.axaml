@@ -276,5 +276,15 @@
                 <TranslateTransform />
             </Grid.RenderTransform>
         </Grid>
+
+        <!-- Notification Overlay -->
+        <StackPanel x:Name="NotificationArea" 
+                    VerticalAlignment="Bottom" 
+                    HorizontalAlignment="Right" 
+                    Margin="0,0,20,20" 
+                    Width="300" 
+                    Spacing="10">
+            <!-- Notifications will be added here dynamically -->
+        </StackPanel>
     </Grid>
 </Window>

@@ -1,5 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Threading;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
@@ -147,6 +149,34 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ShowNotification(string title, string message, bool isError = false)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            var notification = new Border
+            {
+                Background = new SolidColorBrush(Color.Parse(isError ? "#C62828" : "#2A2A2A")),
+                Padding = new Thickness(15),
+                CornerRadius = new CornerRadius(8),
+                BoxShadow = new BoxShadows(new BoxShadow { Blur = 10, Color = Color.FromArgb(128, 0, 0, 0) }),
+                Child = new StackPanel
+                {
+                    Spacing = 5,
+                    Children =
+                    {
+                        new TextBlock { Text = title, FontWeight = FontWeight.Bold, FontSize = 14 },
+                        new TextBlock { Text = message, FontSize = 12, TextWrapping = TextWrapping.Wrap, Opacity = 0.8 }
+                    }
+                }
+            };
+
+            NotificationArea.Children.Add(notification);
+
+            // Auto-remove after 5 seconds
+            Task.Delay(5000).ContinueWith(_ => Dispatcher.UIThread.InvokeAsync(() => NotificationArea.Children.Remove(notification)));
+        });
+    }
+
     private void Log(string message)
     {
         try
@@ -189,6 +219,7 @@ public partial class MainWindow : Window
             if (!string.IsNullOrEmpty(latestVersion) && latestVersion != _currentVersion)
             {
                 Log($"New update available: {latestVersion}");
+                ShowNotification("Update Available", $"Midnight Launcher {latestVersion} is ready to install.");
                 var asset = release["assets"]?.FirstOrDefault(a => a["name"]?.ToString().EndsWith(".zip") == true);
                 if (asset != null)
                 {
@@ -219,6 +250,7 @@ public partial class MainWindow : Window
             await File.WriteAllBytesAsync(zipPath, data);
             
             Log("Update downloaded to cache. Preparing updater script.");
+            ShowNotification("Update Downloaded", "The update will be applied when the launcher closes.");
             PrepareUpdater();
         }
         catch (Exception ex)

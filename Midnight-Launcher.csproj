@@ -7,6 +7,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>Assets/icon.ico</ApplicationIcon>
+    
+    <!-- Antivirus Flag Reduction Metadata -->
+    <Description>A lightweight, open-source Minecraft launcher by CStudioss.</Description>
+    <Company>CStudioss</Company>
+    <Product>Midnight Launcher</Product>
+    <Copyright>Copyright © 2026 CStudioss</Copyright>
+    <Authors>CStudioss</Authors>
+    <Version>1.0.8</Version>
+    <FileVersion>1.0.8.0</FileVersion>
+    <AssemblyVersion>1.0.8.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
