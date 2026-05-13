@@ -15,19 +15,9 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            bool useExperimental = false;
-            if (System.IO.File.Exists("config.json"))
-            {
-                try
-                {
-                    var json = System.IO.File.ReadAllText("config.json");
-                    var config = Newtonsoft.Json.Linq.JObject.Parse(json);
-                    useExperimental = (bool?)config["ExperimentalUi"] ?? false;
-                }
-                catch { }
-            }
-
-            if (useExperimental)
+            var config = ConfigService.Load();
+            
+            if (config.ExperimentalUi)
                 desktop.MainWindow = new ExperimentalMainWindow();
             else
                 desktop.MainWindow = new MainWindow();

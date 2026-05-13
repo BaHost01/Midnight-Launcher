@@ -11,12 +11,9 @@ public partial class ExperimentalMainWindow : Window
         InitializeComponent();
         ReturnButton.Click += (s, e) =>
         {
-            try
-            {
-                var config = new { ExperimentalUi = false };
-                File.WriteAllText("config.json", Newtonsoft.Json.JsonConvert.SerializeObject(config));
-            }
-            catch { }
+            var config = ConfigService.Load();
+            config.ExperimentalUi = false;
+            ConfigService.Save(config);
             
             var main = new MainWindow();
             main.Show();

@@ -23,7 +23,7 @@ public partial class MainWindow : Window
     private readonly MinecraftLauncher _launcher;
     private readonly IAppCache _cache = new CachingService();
     private readonly string _accountsPath = "accounts.json";
-    private readonly string _configPath = "config.json";
+    private LauncherConfig _config;
     private readonly string _currentVersion = "v1.1.5";
     private readonly System.Net.Http.HttpClient _httpClient = new System.Net.Http.HttpClient();
     // private CmlLib.Core.Version.Changelogs? _changelogs;
@@ -35,6 +35,10 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        // Load Config and ensure directories
+        _config = ConfigService.Load();
+        EnsureRequiredDirectories();
 
         // Load YAML Settings and Generate Encrypted Tokens
         try
@@ -51,7 +55,7 @@ public partial class MainWindow : Window
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "MidnightLauncher");
         LoggingService.Info("Application started.");
         
-        var path = new MinecraftPath("./game");
+        var path = new MinecraftPath(_config.GamePath);
         _launcher = new MinecraftLauncher(path);
 
         _launcher.FileProgressChanged += (s, e) =>
@@ -73,7 +77,6 @@ public partial class MainWindow : Window
         ChangelogVersionListBox.ItemsSource = ChangelogVersions;
         
         LoadAccounts();
-        LoadConfig();
         InitializeLauncher();
         CheckForUpdates();
 
@@ -94,6 +97,26 @@ public partial class MainWindow : Window
         NavListBox.SelectionChanged += NavListBox_SelectionChanged;
         
         NavListBox.SelectedIndex = 0;
+        
+        // Sync UI with config
+        RamSlider.Value = _config.SelectedRam;
+        RamValueText.Text = $"{_config.SelectedRam} MB";
+    }
+
+    private void EnsureRequiredDirectories()
+    {
+        try
+        {
+            if (!Directory.Exists(_config.GamePath))
+            {
+                Directory.CreateDirectory(_config.GamePath);
+                LoggingService.Info($"Created missing game directory: {_config.GamePath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Error("Failed to create required directories", ex);
+        }
     }
 
     private async void LoadNews()
@@ -311,23 +334,11 @@ public partial class MainWindow : Window
         {
             var result = folders[0].Path.LocalPath;
             LoggingService.Info($"Changing game folder to {result}");
+            
+            _config.GamePath = result;
+            ConfigService.Save(_config);
+            
             ShowNotification("Path Changed", "Please restart the launcher to apply the new path.");
-        }
-    }
-
-    private void LoadConfig()
-    {
-        if (File.Exists(_configPath))
-        {
-            try
-            {
-                var json = File.ReadAllText(_configPath);
-                // Future config like RAM could be loaded here
-            }
-            catch (Exception ex)
-            {
-                LoggingService.Error("Failed to load config", ex);
-            }
         }
     }
 
@@ -484,6 +495,12 @@ Start-Process '.\Midnight-Launcher.exe'
                 LoggingService.Error("Failed to load accounts", ex);
             }
         }
+        else
+        {
+            // Initialize empty accounts file if missing
+            SaveAccounts();
+            LoggingService.Info("Initialized empty accounts.json.");
+        }
 
         if (Accounts.Count > 0)
         {
@@ -524,8 +541,9 @@ Start-Process '.\Midnight-Launcher.exe'
         {
             try
             {
-                var config = new { ExperimentalUi = true };
-                File.WriteAllText(_configPath, Newtonsoft.Json.JsonConvert.SerializeObject(config));
+                _config.ExperimentalUi = true;
+                _config.SelectedRam = (int)RamSlider.Value;
+                ConfigService.Save(_config);
                 
                 var exp = new ExperimentalMainWindow();
                 exp.Show();
@@ -676,7 +694,7 @@ Start-Process '.\Midnight-Launcher.exe'
             var process = await _launcher.BuildProcessAsync(version, new MLaunchOption
             {
                 Session = MSession.CreateOfflineSession(username),
-                MaximumRamMb = 4096
+                MaximumRamMb = (int)RamSlider.Value
             });
 
             process.Start();
