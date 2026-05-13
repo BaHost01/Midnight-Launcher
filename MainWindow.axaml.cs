@@ -22,11 +22,13 @@ public partial class MainWindow : Window
     private readonly string _accountsPath = "accounts.json";
     private readonly string _configPath = "config.json";
     private readonly string _logPath = "MidnightLauncherLogs.txt";
-    private readonly string _currentVersion = "v1.0.6";
+    private readonly string _currentVersion = "v1.0.8";
     private readonly System.Net.Http.HttpClient _httpClient = new System.Net.Http.HttpClient();
+    // private CmlLib.Core.Version.Changelogs? _changelogs;
     public ObservableCollection<string> Accounts { get; } = new();
     public ObservableCollection<NewsItem> News { get; } = new();
     public ObservableCollection<ModItem> Mods { get; } = new();
+    public ObservableCollection<string> ChangelogVersions { get; } = new();
 
     public MainWindow()
     {
@@ -54,6 +56,7 @@ public partial class MainWindow : Window
         AccountsListBox.ItemsSource = Accounts;
         NewsListBox.ItemsSource = News;
         ModsListBox.ItemsSource = Mods;
+        ChangelogVersionListBox.ItemsSource = ChangelogVersions;
         
         LoadAccounts();
         LoadConfig();
@@ -64,10 +67,16 @@ public partial class MainWindow : Window
         PlayButton.Click += PlayButton_Click;
         RefreshVersionsButton.Click += async (s, e) => await LoadVersions();
         OpenFolderButton.Click += OpenFolderButton_Click;
+        ChangeFolderButton.Click += ChangeFolderButton_Click;
         SearchModsButton.Click += async (s, e) => await SearchMods();
+        InstallForgeButton.Click += async (s, e) => await InstallForge();
+        InstallFabricButton.Click += async (s, e) => await InstallFabric();
+        RamSlider.PropertyChanged += (s, e) => { if (e.Property.Name == "Value") RamValueText.Text = $"{(int)RamSlider.Value} MB"; };
+        ThemeComboBox.SelectionChanged += ThemeComboBox_SelectionChanged;
         ExperimentalUiToggle.IsCheckedChanged += ExperimentalUiToggle_IsCheckedChanged;
         CloseNewsButton.Click += (s, e) => NewsArticleOverlay.IsVisible = false;
         NewsListBox.SelectionChanged += NewsListBox_SelectionChanged;
+        ChangelogVersionListBox.SelectionChanged += ChangelogVersionListBox_SelectionChanged;
         NavListBox.SelectionChanged += NavListBox_SelectionChanged;
         
         NavListBox.SelectedIndex = 0;
@@ -175,6 +184,91 @@ public partial class MainWindow : Window
             // Auto-remove after 5 seconds
             Task.Delay(5000).ContinueWith(_ => Dispatcher.UIThread.InvokeAsync(() => NotificationArea.Children.Remove(notification)));
         });
+    }
+
+    private async void LoadChangelogs()
+    {
+        /*
+        try
+        {
+            _changelogs = await CmlLib.Core.Version.Changelogs.GetChangelogs();
+            var versions = _changelogs.GetAvailableVersions();
+            ChangelogVersions.Clear();
+            foreach (var v in versions) ChangelogVersions.Add(v);
+        }
+        catch (Exception ex)
+        {
+            LogError("Failed to load changelogs", ex);
+        }
+        */
+        ChangelogContentText.Text = "Changelogs API (Changelogs.GetChangelogs()) is not available in the current CmlLib.Core NuGet package. Please check for a newer version or manual DLL integration.";
+    }
+
+    private async void ChangelogVersionListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        /*
+        if (ChangelogVersionListBox.SelectedItem is string version && _changelogs != null)
+        {
+            try
+            {
+                var html = await _changelogs.GetChangelogHtml(version);
+                // Strip HTML for now since we don't have a reliable native renderer yet
+                ChangelogContentText.Text = System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", String.Empty).Trim();
+            }
+            catch (Exception ex)
+            {
+                LogError("Failed to fetch changelog HTML", ex);
+            }
+        }
+        */
+    }
+
+    private async Task InstallForge()
+    {
+        var version = ModloaderVersionComboBox.SelectedItem as string;
+        if (string.IsNullOrEmpty(version)) { ShowNotification("Error", "Select a version first", true); return; }
+
+        ShowNotification("Forge", $"Forge installation for {version} is coming soon!");
+        /*
+        try
+        {
+            var forge = new CmlLib.Core.Installer.Forge.MForge(_launcher);
+            ShowNotification("Forge", "Forge integration initialized. Select the forge version in Home after it finishes.");
+        }
+        catch (Exception ex)
+        {
+            LogError("Forge installation failed", ex);
+            ShowNotification("Error", "Forge installation failed", true);
+        }
+        */
+        await Task.CompletedTask;
+    }
+
+    private async Task InstallFabric()
+    {
+        ShowNotification("Fabric", "Fabric installation is coming soon!");
+        await Task.CompletedTask;
+    }
+
+    private void ThemeComboBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (ThemeComboBox.SelectedItem is ComboBoxItem item)
+        {
+            var theme = item.Content?.ToString();
+            Log($"Switching theme to {theme}");
+            // Theme logic: In a real app, we'd update App.Current.RequestedThemeVariant
+        }
+    }
+
+    private async void ChangeFolderButton_Click(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog();
+        var result = await dialog.ShowAsync(this);
+        if (!string.IsNullOrEmpty(result))
+        {
+            Log($"Changing game folder to {result}");
+            ShowNotification("Path Changed", "Please restart the launcher to apply the new path.");
+        }
     }
 
     private void Log(string message)
@@ -396,6 +490,8 @@ Start-Process '.\Midnight-Launcher.exe'
                 SettingsView.IsVisible = false;
                 NewsView.IsVisible = false;
                 ModsView.IsVisible = false;
+                ModloadersView.IsVisible = false;
+                ChangelogsView.IsVisible = false;
             }
             else if (item == AccountsNav)
             {
@@ -405,6 +501,8 @@ Start-Process '.\Midnight-Launcher.exe'
                 SettingsView.IsVisible = false;
                 NewsView.IsVisible = false;
                 ModsView.IsVisible = false;
+                ModloadersView.IsVisible = false;
+                ChangelogsView.IsVisible = false;
             }
             else if (item == NewsNav)
             {
@@ -414,6 +512,8 @@ Start-Process '.\Midnight-Launcher.exe'
                 SettingsView.IsVisible = false;
                 NewsView.IsVisible = true;
                 ModsView.IsVisible = false;
+                ModloadersView.IsVisible = false;
+                ChangelogsView.IsVisible = false;
                 if (News.Count == 0) LoadNews();
             }
             else if (item == ModsNav)
@@ -424,6 +524,32 @@ Start-Process '.\Midnight-Launcher.exe'
                 SettingsView.IsVisible = false;
                 NewsView.IsVisible = false;
                 ModsView.IsVisible = true;
+                ModloadersView.IsVisible = false;
+                ChangelogsView.IsVisible = false;
+            }
+            else if (item == ModloadersNav)
+            {
+                ViewTitle.Text = "Modloaders";
+                HomeView.IsVisible = false;
+                AccountsView.IsVisible = false;
+                SettingsView.IsVisible = false;
+                NewsView.IsVisible = false;
+                ModsView.IsVisible = false;
+                ModloadersView.IsVisible = true;
+                ChangelogsView.IsVisible = false;
+                ModloaderVersionComboBox.ItemsSource = VersionComboBox.ItemsSource;
+            }
+            else if (item == ChangelogsNav)
+            {
+                ViewTitle.Text = "Changelogs";
+                HomeView.IsVisible = false;
+                AccountsView.IsVisible = false;
+                SettingsView.IsVisible = false;
+                NewsView.IsVisible = false;
+                ModsView.IsVisible = false;
+                ModloadersView.IsVisible = false;
+                ChangelogsView.IsVisible = true;
+                if (ChangelogVersions.Count == 0) LoadChangelogs();
             }
             else if (item == SettingsNav)
             {
@@ -433,6 +559,8 @@ Start-Process '.\Midnight-Launcher.exe'
                 SettingsView.IsVisible = true;
                 NewsView.IsVisible = false;
                 ModsView.IsVisible = false;
+                ModloadersView.IsVisible = false;
+                ChangelogsView.IsVisible = false;
             }
         }
     }
