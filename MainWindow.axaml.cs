@@ -24,7 +24,7 @@ public partial class MainWindow : Window
     private readonly IAppCache _cache = new CachingService();
     private readonly string _accountsPath = "accounts.json";
     private readonly string _configPath = "config.json";
-    private readonly string _currentVersion = "v1.0.8";
+    private readonly string _currentVersion = "v1.1.5";
     private readonly System.Net.Http.HttpClient _httpClient = new System.Net.Http.HttpClient();
     // private CmlLib.Core.Version.Changelogs? _changelogs;
     public ObservableCollection<string> Accounts { get; } = new();
