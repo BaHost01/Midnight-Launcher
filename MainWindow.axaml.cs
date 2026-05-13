@@ -364,20 +364,27 @@ public partial class MainWindow : Window
         try
         {
             var cacheDir = Path.Combine(Environment.CurrentDirectory, "cache", "updates");
-            if (!Directory.Exists(cacheDir))
-                Directory.CreateDirectory(cacheDir);
+            if (Directory.Exists(cacheDir)) Directory.Delete(cacheDir, true);
+            Directory.CreateDirectory(cacheDir);
 
             var zipPath = Path.Combine(cacheDir, "update.zip");
+            
+            Log($"Downloading update from {url}");
             var data = await _httpClient.GetByteArrayAsync(url);
+            
+            if (data == null || data.Length < 1000) 
+                throw new Exception("Downloaded update file is too small or invalid.");
+
             await File.WriteAllBytesAsync(zipPath, data);
             
-            Log("Update downloaded to cache. Preparing updater script.");
-            ShowNotification("Update Downloaded", "The update will be applied when the launcher closes.");
+            Log("Update downloaded and verified. Preparing updater script.");
+            ShowNotification("Update Ready", "The launcher will update automatically on next restart.");
             PrepareUpdater();
         }
         catch (Exception ex)
         {
             LogError("Failed to download update", ex);
+            ShowNotification("Update Failed", "Could not download the latest update.", true);
         }
     }
 

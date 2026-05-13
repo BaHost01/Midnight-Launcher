@@ -22,17 +22,16 @@ var process = await _launcher.BuildProcessAsync(version, new MLaunchOption
 ```
 
 ### Game Path
-The game files are stored in the `./game` directory. You can change this by modifying the `MinecraftPath` in `MainWindow.axaml.cs`:
-```csharp
-var path = new MinecraftPath("C:\\Your\\Custom\\Path");
-```
+The game files are stored in the `./game` directory by default. You can change this via the **Settings** menu in the UI or by modifying `Settings.yaml`.
 
-## Adding Features
-Midnight Launcher uses `CmlLib.Core`. You can refer to the [CmlLib.Core Documentation](https://github.com/CmlLib/CmlLib.Core/wiki) to add features like:
-- Modpack support (Forge, Fabric, Quilt).
-- Microsoft/Xbox Live Authentication.
-- Custom JVM arguments.
-- Server auto-connect.
+## Configuration Files
+Midnight Launcher uses three main files for persistence:
+1. **`accounts.json`**: Stores your offline usernames.
+2. **`Settings.yaml`**: Advanced launcher settings (Update channels, API endpoints).
+3. **`Tokens.json`**: Encrypted security tokens containing HWID and session metadata.
+
+## Security Features
+The launcher generates a unique **HWID** (Hardware ID) to secure your local tokens. If you copy the launcher to a different PC, the `Tokens.json` will need to be regenerated to ensure security.
 
 ## Antivirus & False Positives
 Since Midnight Launcher is a specialized tool, it might occasionally be flagged by Antivirus (AV) software as a "False Positive."
