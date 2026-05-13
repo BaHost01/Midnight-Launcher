@@ -7,7 +7,7 @@ namespace Midnight_Launcher;
 
 public class SettingsYaml
 {
-    public string LauncherVersion { get; set; } = "v1.1.0";
+    public string LauncherVersion { get; set; } = "v1.1.9";
     public string Environment { get; set; } = "Production";
     public bool AutoUpdateEnabled { get; set; } = true;
     public string UpdateChannel { get; set; } = "Stable";

@@ -92,7 +92,7 @@
                     </ListBox>
 
                     <StackPanel Grid.Row="2" Margin="25" Spacing="10">
-                        <TextBlock Text="v1.1.6 Stable" FontSize="12" Opacity="0.5" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="LauncherVersionText" Text="v1.1.9 Stable" FontSize="12" Opacity="0.5" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
             </Border>

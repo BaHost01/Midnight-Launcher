@@ -25,7 +25,7 @@ public partial class MainWindow : Window
     private readonly IAppCache _cache = new CachingService();
     private readonly string _accountsPath = "accounts.json";
     private LauncherConfig _config;
-    private readonly string _currentVersion = "v1.1.5";
+    private readonly string _currentVersion = "v1.1.9";
     private readonly System.Net.Http.HttpClient _httpClient = new System.Net.Http.HttpClient();
     // private CmlLib.Core.Version.Changelogs? _changelogs;
     public ObservableCollection<string> Accounts { get; } = new();
@@ -54,7 +54,7 @@ public partial class MainWindow : Window
         }
         
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "MidnightLauncher");
-        LoggingService.Info("Application started.");
+        LoggingService.Info($"Application started. Version: {_currentVersion}");
         
         var path = new MinecraftPath(_config.GamePath);
         _launcher = new MinecraftLauncher(path);
@@ -101,6 +101,11 @@ public partial class MainWindow : Window
         // Sync UI with config
         RamSlider.Value = _config.SelectedRam;
         RamValueText.Text = $"{_config.SelectedRam} MB";
+
+        // Display version in UI (if we had a binding, but we can set it manually for now)
+        // Find the version text block and update it
+        var versionText = this.FindControl<TextBlock>("LauncherVersionText");
+        if (versionText != null) versionText.Text = $"{_currentVersion} Stable";
     }
 
     private void EnsureRequiredDirectories()
@@ -367,20 +372,31 @@ public partial class MainWindow : Window
         {
             var response = await _httpClient.GetStringAsync("https://api.github.com/repos/BaHost01/Midnight-Launcher/releases/latest");
             var release = Newtonsoft.Json.Linq.JToken.Parse(response);
-            var latestVersion = release["tag_name"]?.ToString();
+            var latestVersionStr = release["tag_name"]?.ToString();
 
-            if (!string.IsNullOrEmpty(latestVersion) && latestVersion != _currentVersion)
+            if (!string.IsNullOrEmpty(latestVersionStr))
             {
-                LoggingService.Info($"New update available: {latestVersion}");
-                ShowNotification("Update Available", $"Midnight Launcher {latestVersion} is ready to install.");
-                var asset = release["assets"]?.FirstOrDefault(a => a["name"]?.ToString().EndsWith(".zip") == true);
-                if (asset != null)
+                // Parse versions for comparison (ignoring 'v' prefix)
+                var currentV = new Version(_currentVersion.TrimStart('v'));
+                var latestV = new Version(latestVersionStr.TrimStart('v'));
+
+                if (latestV > currentV)
                 {
-                    var downloadUrl = asset["browser_download_url"]?.ToString();
-                    if (!string.IsNullOrEmpty(downloadUrl))
+                    LoggingService.Info($"New update available: {latestVersionStr}");
+                    ShowNotification("Update Available", $"Midnight Launcher {latestVersionStr} is ready to install.");
+                    var asset = release["assets"]?.FirstOrDefault(a => a["name"]?.ToString().EndsWith(".zip") == true);
+                    if (asset != null)
                     {
-                        await DownloadUpdate(downloadUrl);
+                        var downloadUrl = asset["browser_download_url"]?.ToString();
+                        if (!string.IsNullOrEmpty(downloadUrl))
+                        {
+                            await DownloadUpdate(downloadUrl);
+                        }
                     }
+                }
+                else
+                {
+                    LoggingService.Info("Application is up to date.");
                 }
             }
         }
