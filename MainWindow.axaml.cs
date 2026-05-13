@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.ProcessBuilder;
+using LazyCache;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,6 +20,7 @@ namespace Midnight_Launcher;
 public partial class MainWindow : Window
 {
     private readonly MinecraftLauncher _launcher;
+    private readonly IAppCache _cache = new CachingService();
     private readonly string _accountsPath = "accounts.json";
     private readonly string _configPath = "config.json";
     private readonly string _logPath = "MidnightLauncherLogs.txt";
@@ -98,22 +100,30 @@ public partial class MainWindow : Window
     {
         try
         {
-            var response = await _httpClient.GetStringAsync("https://launchercontent.mojang.com/news.json");
-            var data = Newtonsoft.Json.Linq.JObject.Parse(response);
-            var entries = data["entries"];
-            
-            News.Clear();
-            foreach (var entry in entries ?? Enumerable.Empty<Newtonsoft.Json.Linq.JToken>())
+            var newsItems = await _cache.GetOrAddAsync<List<NewsItem>>("mojang_news", async () =>
             {
-                News.Add(new NewsItem
+                var response = await _httpClient.GetStringAsync("https://launchercontent.mojang.com/news.json");
+                var data = Newtonsoft.Json.Linq.JObject.Parse(response);
+                var entries = data["entries"];
+                
+                var list = new List<NewsItem>();
+                foreach (var entry in entries ?? Enumerable.Empty<Newtonsoft.Json.Linq.JToken>())
                 {
-                    Title = entry["title"]?.ToString() ?? "",
-                    Date = entry["date"]?.ToString() ?? "",
-                    Summary = entry["text"]?.ToString() ?? "",
-                    ImageUrl = "https://launchercontent.mojang.com" + entry["playPageImage"]?["url"]?.ToString(),
-                    Url = entry["readMoreLink"]?.ToString() ?? ""
-                });
-            }
+                    list.Add(new NewsItem
+                    {
+                        Title = entry["title"]?.ToString() ?? "",
+                        Date = entry["date"]?.ToString() ?? "",
+                        Summary = entry["text"]?.ToString() ?? "",
+                        ImageUrl = "https://launchercontent.mojang.com" + entry["playPageImage"]?["url"]?.ToString(),
+                        Url = entry["readMoreLink"]?.ToString() ?? ""
+                    });
+                }
+                return list;
+            }, TimeSpan.FromMinutes(30));
+
+            News.Clear();
+            foreach (var item in newsItems) News.Add(item);
+            Log("News loaded successfully (cached).");
         }
         catch (Exception ex)
         {
@@ -428,10 +438,13 @@ Start-Process '.\Midnight-Launcher.exe'
     {
         try
         {
-            var versions = await _launcher.GetAllVersionsAsync();
+            var versions = await _cache.GetOrAddAsync("mc_versions", 
+                async () => await _launcher.GetAllVersionsAsync(), 
+                TimeSpan.FromMinutes(10));
+
             VersionComboBox.ItemsSource = versions.Select(v => v.Name);
             VersionComboBox.SelectedIndex = 0;
-            Log("Versions loaded successfully.");
+            Log("Versions loaded successfully (cached).");
         }
         catch (Exception ex)
         {
