@@ -3,12 +3,19 @@ name: Build Midnight Launcher
 on:
   push:
     branches: [ "main", "master" ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
   pull_request:
     branches: [ "main", "master" ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -32,13 +39,16 @@ jobs:
     - name: Build
       run: dotnet build --no-restore -c Release
       
-    - name: Publish (Self-Contained)
-      run: |
-        dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/win-x64
-        dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/linux-x64
+    - name: Publish (Win-x64)
+      if: runner.os == 'Windows'
+      run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/win-x64
+        
+    - name: Publish (Linux-x64)
+      if: runner.os == 'Linux'
+      run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/linux-x64
         
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Midnight-Launcher-Builds
+        name: Midnight-Launcher-${{ runner.os }}
         path: ./publish/

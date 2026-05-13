@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.Platform.Storage;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.ProcessBuilder;
@@ -23,7 +24,6 @@ public partial class MainWindow : Window
     private readonly IAppCache _cache = new CachingService();
     private readonly string _accountsPath = "accounts.json";
     private readonly string _configPath = "config.json";
-    private readonly string _logPath = "MidnightLauncherLogs.txt";
     private readonly string _currentVersion = "v1.0.8";
     private readonly System.Net.Http.HttpClient _httpClient = new System.Net.Http.HttpClient();
     // private CmlLib.Core.Version.Changelogs? _changelogs;
@@ -44,12 +44,12 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            LogError("Failed to initialize Security tokens", ex);
+            LoggingService.Error("Failed to initialize Security tokens", ex);
             ShowNotification("Security Warning", "Could not generate session tokens. Security features may be limited.", true);
         }
         
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "MidnightLauncher");
-        Log("Application started.");
+        LoggingService.Info("Application started.");
         
         var path = new MinecraftPath("./game");
         _launcher = new MinecraftLauncher(path);
@@ -123,11 +123,11 @@ public partial class MainWindow : Window
 
             News.Clear();
             foreach (var item in newsItems) News.Add(item);
-            Log("News loaded successfully (cached).");
+            LoggingService.Info("News loaded successfully (cached).");
         }
         catch (Exception ex)
         {
-            LogError("Failed to load news", ex);
+            LoggingService.Error("Failed to load news", ex);
         }
     }
 
@@ -145,7 +145,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                LogError("Failed to open news URL", ex);
+                LoggingService.Error("Failed to open news URL", ex);
             }
             NewsListBox.SelectedItem = null;
         }
@@ -176,7 +176,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            LogError("Mod search failed", ex);
+            LoggingService.Error("Mod search failed", ex);
         }
     }
 
@@ -213,7 +213,7 @@ public partial class MainWindow : Window
         try
         {
             // Fallback: Using Mojang News JSON as requested
-            Log("Fetching changelogs fallback from Mojang News.");
+            LoggingService.Info("Fetching changelogs fallback from Mojang News.");
             var response = await _httpClient.GetStringAsync("https://launchercontent.mojang.com/news.json");
             var data = Newtonsoft.Json.Linq.JObject.Parse(response);
             var entries = data["entries"];
@@ -232,7 +232,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            LogError("Failed to load changelogs fallback", ex);
+            LoggingService.Error("Failed to load changelogs fallback", ex);
             ChangelogContentText.Text = "Failed to load changelogs from all sources.";
         }
     }
@@ -257,7 +257,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                LogError("Failed to fetch changelog detail", ex);
+                LoggingService.Error("Failed to fetch changelog detail", ex);
             }
         }
     }
@@ -276,7 +276,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            LogError("Forge installation failed", ex);
+            LoggingService.Error("Forge installation failed", ex);
             ShowNotification("Error", "Forge installation failed", true);
         }
         */
@@ -294,35 +294,25 @@ public partial class MainWindow : Window
         if (ThemeComboBox.SelectedItem is ComboBoxItem item)
         {
             var theme = item.Content?.ToString();
-            Log($"Switching theme to {theme}");
+            LoggingService.Info($"Switching theme to {theme}");
             // Theme logic: In a real app, we'd update App.Current.RequestedThemeVariant
         }
     }
 
     private async void ChangeFolderButton_Click(object? sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog();
-        var result = await dialog.ShowAsync(this);
-        if (!string.IsNullOrEmpty(result))
+        var folders = await this.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Log($"Changing game folder to {result}");
+            Title = "Select Game Folder",
+            AllowMultiple = false
+        });
+
+        if (folders != null && folders.Count > 0)
+        {
+            var result = folders[0].Path.LocalPath;
+            LoggingService.Info($"Changing game folder to {result}");
             ShowNotification("Path Changed", "Please restart the launcher to apply the new path.");
         }
-    }
-
-    private void Log(string message)
-    {
-        try
-        {
-            var logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
-            File.AppendAllText(_logPath, logEntry);
-        }
-        catch { }
-    }
-
-    private void LogError(string message, Exception ex)
-    {
-        Log($"ERROR: {message} | {ex.Message}{Environment.NewLine}{ex.StackTrace}");
     }
 
     private void LoadConfig()
@@ -336,7 +326,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                LogError("Failed to load config", ex);
+                LoggingService.Error("Failed to load config", ex);
             }
         }
     }
@@ -351,7 +341,7 @@ public partial class MainWindow : Window
 
             if (!string.IsNullOrEmpty(latestVersion) && latestVersion != _currentVersion)
             {
-                Log($"New update available: {latestVersion}");
+                LoggingService.Info($"New update available: {latestVersion}");
                 ShowNotification("Update Available", $"Midnight Launcher {latestVersion} is ready to install.");
                 var asset = release["assets"]?.FirstOrDefault(a => a["name"]?.ToString().EndsWith(".zip") == true);
                 if (asset != null)
@@ -366,7 +356,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            LogError("Update check failed", ex);
+            LoggingService.Error("Update check failed", ex);
         }
     }
 
@@ -380,7 +370,7 @@ public partial class MainWindow : Window
 
             var zipPath = Path.Combine(cacheDir, "update.zip");
             
-            Log($"Downloading update from {url}");
+            LoggingService.Info($"Downloading update from {url}");
             var data = await _httpClient.GetByteArrayAsync(url);
             
             if (data == null || data.Length < 1000) 
@@ -388,13 +378,13 @@ public partial class MainWindow : Window
 
             await File.WriteAllBytesAsync(zipPath, data);
             
-            Log("Update downloaded and verified. Preparing updater script.");
+            LoggingService.Info("Update downloaded and verified. Preparing updater script.");
             ShowNotification("Update Ready", "The launcher will update automatically on next restart.");
             PrepareUpdater();
         }
         catch (Exception ex)
         {
-            LogError("Failed to download update", ex);
+            LoggingService.Error("Failed to download update", ex);
             ShowNotification("Update Failed", "Could not download the latest update.", true);
         }
     }
@@ -410,28 +400,47 @@ Remove-Item $zipPath
 Start-Process '.\Midnight-Launcher.exe'
 ";
         File.WriteAllText("updater.ps1", psScript);
-        Log("Updater script prepared.");
+        LoggingService.Info("Updater script prepared.");
     }
 
     private async void InitializeLauncher()
     {
-        LoadingOverlay.IsVisible = true;
-        LoadingStatus.Text = "Fetching versions from Mojang...";
-        
-        await LoadVersions();
-        
-        LoadingStatus.Text = "Loading accounts...";
-        await Task.Delay(200); 
-        
-        LoadingOverlay.IsVisible = false;
-        Log("Data loaded. Showing branding animation.");
+        try
+        {
+            LoadingOverlay.IsVisible = true;
+            LoadingStatus.Text = "Fetching versions from Mojang...";
 
-        // Show Branding Animation
-        BrandingOverlay.IsVisible = true;
-        await Task.Delay(3100); // Slightly more than the 3s animation
-        BrandingOverlay.IsVisible = false;
+            await LoadVersions();
 
-        Log("Launcher initialized.");
+            LoadingStatus.Text = "Loading accounts...";
+            await Task.Delay(200);
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Error("Initialization error", ex);
+        }
+        finally
+        {
+            LoadingOverlay.IsVisible = false;
+        }
+
+        try
+        {
+            LoggingService.Info("Data loaded. Showing branding animation.");
+
+            // Show Branding Animation
+            BrandingOverlay.IsVisible = true;
+            await Task.Delay(3100); // Slightly more than the 3s animation
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Error("Branding animation error", ex);
+        }
+        finally
+        {
+            BrandingOverlay.IsVisible = false;
+            LoggingService.Info("Launcher initialized.");
+        }
     }
 
     private async Task LoadVersions()
@@ -442,17 +451,19 @@ Start-Process '.\Midnight-Launcher.exe'
                 async () => await _launcher.GetAllVersionsAsync(), 
                 TimeSpan.FromMinutes(10));
 
-            VersionComboBox.ItemsSource = versions.Select(v => v.Name);
-            VersionComboBox.SelectedIndex = 0;
-            Log("Versions loaded successfully (cached).");
+            var versionNames = versions.Select(v => v.Name).ToList();
+            VersionComboBox.ItemsSource = versionNames;
+            if (versionNames.Count > 0)
+                VersionComboBox.SelectedIndex = 0;
+            
+            LoggingService.Info("Versions loaded successfully (cached).");
         }
         catch (Exception ex)
         {
             LoadingStatus.Text = $"Error: {ex.Message}";
-            LogError("Failed to load versions", ex);
+            LoggingService.Error("Failed to load versions", ex);
         }
     }
-
     private void LoadAccounts()
     {
         if (File.Exists(_accountsPath))
@@ -466,11 +477,11 @@ Start-Process '.\Midnight-Launcher.exe'
                     foreach (var acc in savedAccounts)
                         Accounts.Add(acc);
                 }
-                Log($"Loaded {Accounts.Count} accounts.");
+                LoggingService.Info($"Loaded {Accounts.Count} accounts.");
             }
             catch (Exception ex)
             {
-                LogError("Failed to load accounts", ex);
+                LoggingService.Error("Failed to load accounts", ex);
             }
         }
 
@@ -490,7 +501,7 @@ Start-Process '.\Midnight-Launcher.exe'
         }
         catch (Exception ex)
         {
-            LogError("Failed to save accounts", ex);
+            LoggingService.Error("Failed to save accounts", ex);
         }
     }
 
@@ -503,7 +514,7 @@ Start-Process '.\Midnight-Launcher.exe'
             SaveAccounts();
             AccountComboBox.SelectedItem = username;
             NewUsernameTextBox.Text = "";
-            Log($"Added new account: {username}");
+            LoggingService.Info($"Added new account: {username}");
         }
     }
 
@@ -522,7 +533,7 @@ Start-Process '.\Midnight-Launcher.exe'
             }
             catch (Exception ex)
             {
-                LogError("Failed to switch to experimental UI", ex);
+                LoggingService.Error("Failed to switch to experimental UI", ex);
             }
         }
     }
@@ -620,7 +631,7 @@ Start-Process '.\Midnight-Launcher.exe'
         if (!Directory.Exists(path))
             Directory.CreateDirectory(path);
 
-        Log($"Opening game folder: {path}");
+        LoggingService.Info($"Opening game folder: {path}");
         try
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
@@ -633,7 +644,7 @@ Start-Process '.\Midnight-Launcher.exe'
         catch (Exception ex)
         {
             StatusTextBlock.Text = $"Could not open folder: {ex.Message}";
-            LogError("Failed to open game folder", ex);
+            LoggingService.Error("Failed to open game folder", ex);
         }
     }
 
@@ -656,7 +667,7 @@ Start-Process '.\Midnight-Launcher.exe'
 
         PlayButton.IsEnabled = false;
         StatusTextBlock.Text = $"Starting {version}...";
-        Log($"Attempting to launch {version} for user {username}");
+        LoggingService.Info($"Attempting to launch {version} for user {username}");
 
         try
         {
@@ -670,11 +681,11 @@ Start-Process '.\Midnight-Launcher.exe'
 
             process.Start();
             StatusTextBlock.Text = "Game started!";
-            Log("Game process started successfully.");
+            LoggingService.Info("Game process started successfully.");
 
             if (File.Exists("updater.ps1"))
             {
-                Log("Update pending. Starting updater and exiting.");
+                LoggingService.Info("Update pending. Starting updater and exiting.");
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = "powershell",
@@ -688,7 +699,7 @@ Start-Process '.\Midnight-Launcher.exe'
         catch (Exception ex)
         {
             StatusTextBlock.Text = $"Error: {ex.Message}";
-            LogError("Failed to launch game", ex);
+            LoggingService.Error("Failed to launch game", ex);
         }
         finally
         {
@@ -700,7 +711,7 @@ Start-Process '.\Midnight-Launcher.exe'
     {
         if (File.Exists("updater.ps1"))
         {
-            Log("Update pending. Starting updater on close.");
+            LoggingService.Info("Update pending. Starting updater on close.");
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName = "powershell",

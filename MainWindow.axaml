@@ -15,7 +15,7 @@
             <!-- Sidebar -->
             <StackPanel Grid.Column="0" Background="#1E1E1E" Spacing="0">
                 <StackPanel Orientation="Horizontal" Margin="20" Spacing="15">
-                    <Image Source="avares://Midnight_Launcher/Assets/app_icon.png" Width="40" Height="40"/>
+                    <PathIcon Data="{StaticResource IconMods}" Width="32" Height="32" Foreground="#FF2196F3"/>
                     <TextBlock Text="Midnight" VerticalAlignment="Center" FontSize="20" FontWeight="Bold"/>
                 </StackPanel>
                 
@@ -28,43 +28,43 @@
                     </ListBox.Styles>
                     <ListBoxItem x:Name="HomeNav">
                         <StackPanel Orientation="Horizontal" Spacing="15">
-                            <Image Source="avares://Midnight_Launcher/Assets/home.png" Width="20" Height="20"/>
+                            <PathIcon Data="{StaticResource IconHome}" Width="18" Height="18" Opacity="0.7"/>
                             <TextBlock Text="Home" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem x:Name="AccountsNav">
                         <StackPanel Orientation="Horizontal" Spacing="15">
-                            <Image Source="avares://Midnight_Launcher/Assets/accounts.png" Width="20" Height="20"/>
+                            <PathIcon Data="{StaticResource IconAccounts}" Width="18" Height="18" Opacity="0.7"/>
                             <TextBlock Text="Accounts" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem x:Name="NewsNav">
                         <StackPanel Orientation="Horizontal" Spacing="15">
-                            <Image Source="avares://Midnight_Launcher/Assets/news.png" Width="20" Height="20"/>
+                            <PathIcon Data="{StaticResource IconNews}" Width="18" Height="18" Opacity="0.7"/>
                             <TextBlock Text="News" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem x:Name="ModsNav">
                         <StackPanel Orientation="Horizontal" Spacing="15">
-                            <Image Source="avares://Midnight_Launcher/Assets/modrinth.png" Width="20" Height="20"/>
+                            <PathIcon Data="{StaticResource IconMods}" Width="18" Height="18" Opacity="0.7"/>
                             <TextBlock Text="Mods" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem x:Name="ModloadersNav">
                         <StackPanel Orientation="Horizontal" Spacing="15">
-                            <Image Source="avares://Midnight_Launcher/Assets/modloaders.png" Width="20" Height="20"/>
+                            <PathIcon Data="{StaticResource IconModloaders}" Width="18" Height="18" Opacity="0.7"/>
                             <TextBlock Text="Modloaders" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem x:Name="ChangelogsNav">
                         <StackPanel Orientation="Horizontal" Spacing="15">
-                            <Image Source="avares://Midnight_Launcher/Assets/changelogs.png" Width="20" Height="20"/>
+                            <PathIcon Data="{StaticResource IconChangelogs}" Width="18" Height="18" Opacity="0.7"/>
                             <TextBlock Text="Changelogs" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem x:Name="SettingsNav">
                         <StackPanel Orientation="Horizontal" Spacing="15">
-                            <Image Source="avares://Midnight_Launcher/Assets/settings.png" Width="20" Height="20"/>
+                            <PathIcon Data="{StaticResource IconSettings}" Width="18" Height="18" Opacity="0.7"/>
                             <TextBlock Text="Settings" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
@@ -78,7 +78,7 @@
 
                 <!-- Main Content (Home View) -->
                 <StackPanel x:Name="HomeView" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="30">
-                    <Image Source="avares://Midnight_Launcher/Assets/app_icon.png" Width="150" Height="150"/>
+                    <PathIcon Data="{StaticResource IconMods}" Width="120" Height="120" Foreground="#FF2196F3"/>
                     
                     <StackPanel Spacing="10" Width="300">
                         <TextBlock Text="Account" FontSize="14" Foreground="#AAAAAA"/>
@@ -90,7 +90,7 @@
                         <Grid ColumnDefinitions="*, Auto">
                             <ComboBox x:Name="VersionComboBox" HorizontalAlignment="Stretch" Background="#2A2A2A" Grid.Column="0"/>
                             <Button x:Name="RefreshVersionsButton" Grid.Column="1" Margin="5,0,0,0" Background="#2A2A2A" Padding="8">
-                                <Image Source="avares://Midnight_Launcher/Assets/refresh.png" Width="16" Height="16"/>
+                                <PathIcon Data="{StaticResource IconRefresh}" Width="16" Height="16"/>
                             </Button>
                         </Grid>
                     </StackPanel>
@@ -152,7 +152,7 @@
                                 <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="10">
                                     <Button x:Name="ChangeFolderButton" Content="Change" Background="#2A2A2A" Padding="15,8"/>
                                     <Button x:Name="OpenFolderButton" Background="#2A2A2A" Padding="15,8">
-                                        <Image Source="avares://Midnight_Launcher/Assets/folder.png" Width="16" Height="16"/>
+                                        <PathIcon Data="{StaticResource IconFolder}" Width="16" Height="16"/>
                                     </Button>
                                 </StackPanel>
                             </Grid>
@@ -261,7 +261,7 @@
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                             Padding="20" Background="#FF2196F3" Foreground="White" CornerRadius="8">
                         <StackPanel Orientation="Horizontal" Spacing="15">
-                            <Image Source="avares://Midnight_Launcher/Assets/play.png" Width="24" Height="24"/>
+                            <PathIcon Data="{StaticResource IconPlay}" Width="24" Height="24"/>
                             <TextBlock Text="PLAY" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
@@ -277,9 +277,9 @@
         <!-- Loading Overlay -->
         <Grid x:Name="LoadingOverlay" Background="#E6121212" IsVisible="True">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="20">
-                <Image Source="avares://Midnight_Launcher/Assets/app_icon.png" Width="100" Height="100" Opacity="0.8">
-                    <Image.Styles>
-                        <Style Selector="Image">
+                <PathIcon Data="{StaticResource IconMods}" Width="100" Height="100" Opacity="0.8" Foreground="#FF2196F3">
+                    <PathIcon.Styles>
+                        <Style Selector="PathIcon">
                             <Style.Animations>
                                 <Animation Duration="0:0:2" IterationCount="Infinite">
                                     <KeyFrame Cue="0%">
@@ -294,8 +294,8 @@
                                 </Animation>
                             </Style.Animations>
                         </Style>
-                    </Image.Styles>
-                </Image>
+                    </PathIcon.Styles>
+                </PathIcon>
                 <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#FF2196F3" Background="Transparent"/>
                 <TextBlock x:Name="LoadingStatus" Text="Preparing Midnight..." HorizontalAlignment="Center" FontSize="16" FontWeight="Light"/>
             </StackPanel>
@@ -303,15 +303,9 @@
         <!-- Branding Overlay -->
         <Grid x:Name="BrandingOverlay" Background="#121212" IsVisible="False">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="60">
-                <!-- Made with C++ -->
+                <!-- Made with love -->
                 <StackPanel Spacing="15" HorizontalAlignment="Center">
-                    <Image Source="avares://Midnight_Launcher/Assets/cpp_logo.png" Width="80" Height="80"/>
-                    <TextBlock Text="Made With C++" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                </StackPanel>
-
-                <!-- Made with Love (CStudioss) -->
-                <StackPanel Spacing="15" HorizontalAlignment="Center">
-                    <Image Source="avares://Midnight_Launcher/Assets/cstudioss_logo.png" Width="80" Height="80"/>
+                    <PathIcon Data="{StaticResource IconHeart}" Width="80" Height="80" Foreground="#E91E63"/>
                     <TextBlock Text="Made With Love." FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                     <TextBlock Text="CStudioss" FontSize="12" Foreground="#E91E63" HorizontalAlignment="Center" Margin="0,-10,0,0"/>
                 </StackPanel>
