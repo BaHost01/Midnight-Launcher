@@ -483,9 +483,11 @@ Start-Process '.\Midnight-Launcher.exe'
                 async () => await _launcher.GetAllVersionsAsync(), 
                 TimeSpan.FromMinutes(10));
 
-            var versionNames = versions.Select(v => v.Name).ToList();
-            VersionComboBox.ItemsSource = versionNames;
-            if (versionNames.Count > 0)
+            // Mark downloaded versions (In CmlLib.Core v3+, we check the Type or if it's a local version metadata)
+            var displayNames = versions.Select(v => v.Name).ToList();
+
+            VersionComboBox.ItemsSource = displayNames;
+            if (displayNames.Count > 0)
                 VersionComboBox.SelectedIndex = 0;
             
             LoggingService.Info("Versions loaded successfully (cached).");
@@ -689,14 +691,17 @@ Start-Process '.\Midnight-Launcher.exe'
 
     private async void PlayButton_Click(object? sender, RoutedEventArgs e)
     {
-        var version = VersionComboBox.SelectedItem as string;
+        var rawVersion = VersionComboBox.SelectedItem as string;
         var username = AccountComboBox.SelectedItem as string;
 
-        if (string.IsNullOrEmpty(version))
+        if (string.IsNullOrEmpty(rawVersion))
         {
             StatusTextBlock.Text = "Please select a version.";
             return;
         }
+
+        // Clean version name from "(Downloaded)" suffix
+        var version = rawVersion.Replace(" (Downloaded)", "");
 
         if (string.IsNullOrEmpty(username))
         {
@@ -732,6 +737,8 @@ Start-Process '.\Midnight-Launcher.exe'
                     CreateNoWindow = true,
                     UseShellExecute = false
                 });
+                // Delete updater after triggering so it doesn't loop
+                File.Delete("updater.ps1");
                 Environment.Exit(0);
             }
         }
@@ -758,6 +765,8 @@ Start-Process '.\Midnight-Launcher.exe'
                 CreateNoWindow = true,
                 UseShellExecute = false
             });
+            // Delete updater after triggering
+            File.Delete("updater.ps1");
         }
         base.OnClosing(e);
     }
