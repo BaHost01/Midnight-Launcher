@@ -96,6 +96,12 @@ public partial class MainWindow : Window
         ChangelogVersionListBox.SelectionChanged += ChangelogVersionListBox_SelectionChanged;
         NavListBox.SelectionChanged += NavListBox_SelectionChanged;
         
+        CheckUpdatesButton.Click += (s, e) => 
+        {
+            ShowNotification("Update Service", "Checking for latest versions...");
+            CheckForUpdates();
+        };
+        
         NavListBox.SelectedIndex = 0;
         
         // Sync UI with config
@@ -410,6 +416,9 @@ public partial class MainWindow : Window
     {
         try
         {
+            StatusTextBlock.Text = "System Update: Downloading patch...";
+            DownloadProgressBar.IsIndeterminate = true;
+            
             var cacheDir = Path.Combine(Environment.CurrentDirectory, "cache", "updates");
             if (Directory.Exists(cacheDir)) Directory.Delete(cacheDir, true);
             Directory.CreateDirectory(cacheDir);
@@ -417,21 +426,48 @@ public partial class MainWindow : Window
             var zipPath = Path.Combine(cacheDir, "update.zip");
             
             LoggingService.Info($"Downloading update from {url}");
-            var data = await _httpClient.GetByteArrayAsync(url);
             
-            if (data == null || data.Length < 1000) 
-                throw new Exception("Downloaded update file is too small or invalid.");
+            using var response = await _httpClient.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+            
+            var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+            var canReportProgress = totalBytes != -1;
 
-            await File.WriteAllBytesAsync(zipPath, data);
+            using var contentStream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+            
+            var buffer = new byte[8192];
+            var bytesRead = 0L;
+            int read;
+            
+            while ((read = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await fileStream.WriteAsync(buffer, 0, read);
+                bytesRead += read;
+                
+                if (canReportProgress)
+                {
+                    var progress = (double)bytesRead / totalBytes * 100;
+                    Dispatcher.UIThread.InvokeAsync(() => {
+                        DownloadProgressBar.IsIndeterminate = false;
+                        DownloadProgressBar.Value = progress;
+                        StatusTextBlock.Text = $"System Update: {progress:F1}%";
+                    });
+                }
+            }
             
             LoggingService.Info("Update downloaded and verified. Preparing updater script.");
-            ShowNotification("Update Ready", "The launcher will update automatically on next restart.");
+            ShowNotification("Update Ready", "The launcher will apply the update on next restart.");
+            StatusTextBlock.Text = "System Status: Update Pending";
             PrepareUpdater();
         }
         catch (Exception ex)
         {
             LoggingService.Error("Failed to download update", ex);
             ShowNotification("Update Failed", "Could not download the latest update.", true);
+            StatusTextBlock.Text = "System Status: Update Failed";
+            DownloadProgressBar.Value = 0;
+            DownloadProgressBar.IsIndeterminate = false;
         }
     }
 

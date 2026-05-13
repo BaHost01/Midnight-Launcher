@@ -21,6 +21,23 @@ public static class ConfigService
         if (!File.Exists(ConfigPath))
         {
             var defaultConfig = new LauncherConfig();
+            
+            // Auto-detect .minecraft in AppData
+            try
+            {
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var defaultMcPath = Path.Combine(appData, ".minecraft");
+                if (Directory.Exists(defaultMcPath))
+                {
+                    defaultConfig.GamePath = defaultMcPath;
+                    LoggingService.Info($"Auto-detected .minecraft path: {defaultMcPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.Error("Failed to auto-detect .minecraft path", ex);
+            }
+
             Save(defaultConfig);
             return defaultConfig;
         }
