@@ -33,6 +33,17 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        // Load YAML Settings and Generate Encrypted Tokens
+        try
+        {
+            var yamlSettings = SettingsService.Load();
+            SecurityService.GenerateTokens(_currentVersion);
+        }
+        catch (Exception ex)
+        {
+            LogError("Failed to initialize Settings/Security services", ex);
+        }
         
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "MidnightLauncher");
         Log("Application started.");
@@ -188,39 +199,56 @@ public partial class MainWindow : Window
 
     private async void LoadChangelogs()
     {
-        /*
         try
         {
-            _changelogs = await CmlLib.Core.Version.Changelogs.GetChangelogs();
-            var versions = _changelogs.GetAvailableVersions();
+            // Fallback: Using Mojang News JSON as requested
+            Log("Fetching changelogs fallback from Mojang News.");
+            var response = await _httpClient.GetStringAsync("https://launchercontent.mojang.com/news.json");
+            var data = Newtonsoft.Json.Linq.JObject.Parse(response);
+            var entries = data["entries"];
+
             ChangelogVersions.Clear();
-            foreach (var v in versions) ChangelogVersions.Add(v);
+            foreach (var entry in entries ?? Enumerable.Empty<Newtonsoft.Json.Linq.JToken>())
+            {
+                var title = entry["title"]?.ToString() ?? "Update";
+                ChangelogVersions.Add(title);
+            }
+
+            if (ChangelogVersions.Count == 0)
+            {
+                ChangelogContentText.Text = "No changelogs found in fallback feed.";
+            }
         }
         catch (Exception ex)
         {
-            LogError("Failed to load changelogs", ex);
+            LogError("Failed to load changelogs fallback", ex);
+            ChangelogContentText.Text = "Failed to load changelogs from all sources.";
         }
-        */
-        ChangelogContentText.Text = "Changelogs API (Changelogs.GetChangelogs()) is not available in the current CmlLib.Core NuGet package. Please check for a newer version or manual DLL integration.";
     }
 
     private async void ChangelogVersionListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        /*
-        if (ChangelogVersionListBox.SelectedItem is string version && _changelogs != null)
+        if (ChangelogVersionListBox.SelectedItem is string title)
         {
             try
             {
-                var html = await _changelogs.GetChangelogHtml(version);
-                // Strip HTML for now since we don't have a reliable native renderer yet
-                ChangelogContentText.Text = System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", String.Empty).Trim();
+                // Find the news entry that matches this title
+                var response = await _httpClient.GetStringAsync("https://launchercontent.mojang.com/news.json");
+                var data = Newtonsoft.Json.Linq.JObject.Parse(response);
+                var entry = data["entries"]?.FirstOrDefault(en => en["title"]?.ToString() == title);
+                
+                if (entry != null)
+                {
+                    var text = entry["text"]?.ToString() ?? "No content available.";
+                    var date = entry["date"]?.ToString() ?? "Unknown Date";
+                    ChangelogContentText.Text = $"Date: {date}\n\n{text}";
+                }
             }
             catch (Exception ex)
             {
-                LogError("Failed to fetch changelog HTML", ex);
+                LogError("Failed to fetch changelog detail", ex);
             }
         }
-        */
     }
 
     private async Task InstallForge()
