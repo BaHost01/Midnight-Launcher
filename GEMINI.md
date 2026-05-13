@@ -12,12 +12,12 @@ Midnight Launcher is a professional, cross-platform Minecraft launcher built wit
 
 ### Configuration & Data
 - **`Settings.yaml`**: The primary configuration for core launcher requirements (API endpoints, versioning). Handled by `SettingsService.cs`.
-- **`config.json`**: UI-specific and user settings (RAM, Themes, Experimental UI toggle).
-- **`accounts.json`**: Persistent storage for offline Minecraft sessions.
+- **`config.json`**: UI-specific and user settings (RAM, Themes, Experimental UI toggle). Now managed by `ConfigService.cs` with robust default initialization.
+- **`accounts.json`**: Persistent storage for offline Minecraft sessions. Initialized automatically on first run.
 - **`Tokens.json`**: Encrypted security payload containing HWID and process metadata. Handled by `SecurityService.cs`.
 
 ### Core Features
-- **Auto-Update:** Checks GitHub Releases on startup, downloads updates to `cache/updates/`, and uses `updater.ps1` for delayed replacement.
+- **Auto-Update:** Checks GitHub Releases on startup using Semantic Versioning (`System.Version`). Downloads updates to `cache/updates/` and uses `updater.ps1` for replacement, with automatic cleanup to prevent loops.
 - **News & Changelogs:** Native parsing of Mojang's `news.json` with a robust fallback mechanism.
 - **Modloaders:** UI skeleton for Forge and Fabric integration via `CmlLib.Core.Installer`.
 - **Notifications:** Custom-built transient UI overlays for real-time user feedback.
@@ -25,9 +25,10 @@ Midnight Launcher is a professional, cross-platform Minecraft launcher built wit
 ## Developer Guidelines
 
 ### UI Modifications
-- **Namespace:** Use `using:WebView.Avalonia` for web content (though currently opening in system browser for stability).
-- **Theming:** Default theme is "Midnight". Transitions are handled via `MainWindow.axaml.cs`.
-- **Experimental UI:** Scrapped concepts live in `ExperimentalMainWindow.axaml`. Do not use for stable production features.
+- **Aesthetic:** Modern "Glassmorphism" look using `AcrylicBlur` and semi-transparent layers.
+- **Namespace:** Use `using:WebView.Avalonia` for web content.
+- **Theming:** Supports "Midnight", "Dark", and "Light" variants via `Application.Current.RequestedThemeVariant`.
+- **Experimental UI:** Scrapped concepts live in `ExperimentalMainWindow.axaml`. Stable modern UI is in `MainWindow.axaml`.
 
 ### Security & Reliability
 - **SecurityService:** Should never be a single point of failure. Always wrap in try-catch and notify user of non-critical failures.

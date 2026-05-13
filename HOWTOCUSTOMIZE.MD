@@ -12,23 +12,20 @@ Midnight Launcher uses **Avalonia UI** with the **Fluent Theme**.
 
 ## Game Settings
 ### Memory Allocation
-By default, the launcher allocates 4GB of RAM. You can change this in `MainWindow.axaml.cs` inside the `PlayButton_Click` method:
+The launcher includes a slider in the **Settings** menu to adjust RAM allocation. These settings are persisted in `config.json`. You can also manually change the default in `ConfigService.cs`:
 ```csharp
-var process = await _launcher.BuildProcessAsync(version, new MLaunchOption
-{
-    Session = MSession.CreateOfflineSession(username),
-    MaximumRamMb = 8192 // Change to your desired RAM in MB
-});
+public int SelectedRam { get; set; } = 4096;
 ```
 
 ### Game Path
-The game files are stored in the `./game` directory by default. You can change this via the **Settings** menu in the UI or by modifying `Settings.yaml`.
+The game files are stored in the `./game` directory by default. You can change this via the **Settings** menu in the UI (which updates `config.json`) or by modifying `Settings.yaml`.
 
 ## Configuration Files
-Midnight Launcher uses three main files for persistence:
+Midnight Launcher uses four main files for persistence:
 1. **`accounts.json`**: Stores your offline usernames.
 2. **`Settings.yaml`**: Advanced launcher settings (Update channels, API endpoints).
-3. **`Tokens.json`**: Encrypted security tokens containing HWID and session metadata.
+3. **`config.json`**: User preferences like RAM allocation, UI Theme (Midnight/Dark/Light), and custom Game Paths.
+4. **`Tokens.json`**: Encrypted security tokens containing HWID and session metadata.
 
 ## Security Features
 The launcher generates a unique **HWID** (Hardware ID) to secure your local tokens. If you copy the launcher to a different PC, the `Tokens.json` will need to be regenerated to ensure security.
