@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Styling;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -91,7 +92,6 @@ public partial class MainWindow : Window
         RamSlider.PropertyChanged += (s, e) => { if (e.Property.Name == "Value") RamValueText.Text = $"{(int)RamSlider.Value} MB"; };
         ThemeComboBox.SelectionChanged += ThemeComboBox_SelectionChanged;
         ExperimentalUiToggle.IsCheckedChanged += ExperimentalUiToggle_IsCheckedChanged;
-        CloseNewsButton.Click += (s, e) => NewsArticleOverlay.IsVisible = false;
         NewsListBox.SelectionChanged += NewsListBox_SelectionChanged;
         ChangelogVersionListBox.SelectionChanged += ChangelogVersionListBox_SelectionChanged;
         NavListBox.SelectionChanged += NavListBox_SelectionChanged;
@@ -317,8 +317,27 @@ public partial class MainWindow : Window
         if (ThemeComboBox.SelectedItem is ComboBoxItem item)
         {
             var theme = item.Content?.ToString();
+            if (string.IsNullOrEmpty(theme)) return;
+
             LoggingService.Info($"Switching theme to {theme}");
-            // Theme logic: In a real app, we'd update App.Current.RequestedThemeVariant
+            
+            // Apply theme globally
+            if (Application.Current != null)
+            {
+                Application.Current.RequestedThemeVariant = theme switch
+                {
+                    "Light" => ThemeVariant.Light,
+                    "Dark" => ThemeVariant.Dark,
+                    "Midnight" => ThemeVariant.Dark,
+                    _ => ThemeVariant.Dark
+                };
+            }
+
+            if (_config != null)
+            {
+                _config.Theme = theme;
+                ConfigService.Save(_config);
+            }
         }
     }
 
@@ -419,12 +438,16 @@ Start-Process '.\Midnight-Launcher.exe'
         try
         {
             LoadingOverlay.IsVisible = true;
-            LoadingStatus.Text = "Fetching versions from Mojang...";
+            LoadingStatus.Text = "Synchronizing environment...";
 
-            await LoadVersions();
+            // Parallelize non-dependent tasks to speed up startup
+            var versionTask = LoadVersions();
+            var accountTask = Task.Run(() => Dispatcher.UIThread.InvokeAsync(LoadAccounts));
+            
+            await Task.WhenAll(versionTask, accountTask);
 
-            LoadingStatus.Text = "Loading accounts...";
-            await Task.Delay(200);
+            LoadingStatus.Text = "Ready.";
+            await Task.Delay(100);
         }
         catch (Exception ex)
         {
@@ -437,11 +460,9 @@ Start-Process '.\Midnight-Launcher.exe'
 
         try
         {
-            LoggingService.Info("Data loaded. Showing branding animation.");
-
-            // Show Branding Animation
+            // Show Branding Animation briefly
             BrandingOverlay.IsVisible = true;
-            await Task.Delay(3100); // Slightly more than the 3s animation
+            await Task.Delay(1500); // Optimized for faster startup
         }
         catch (Exception ex)
         {
