@@ -1,27 +1,38 @@
 # Midnight Launcher
 
-Midnight Launcher is a professional, cross-platform Minecraft launcher built with **Avalonia UI** and **.NET 9.0**. It features a modern dark-themed interface with sidebar navigation and advanced configuration options.
+Midnight Launcher is a professional, cross-platform Minecraft launcher built with **Avalonia UI** and **.NET 9.0**. It features a modern dark-themed interface, advanced security, and modular service architecture.
 
-## Features
-- **Modern UI:** Sidebar-based navigation for Home, Accounts, Modloaders, Changelogs, News, Mods, and Settings.
-- **Modloader Support:** Dedicated UI for Forge and Fabric installation (Modloader profile creation).
-- **Changelogs:** View real-time Minecraft version updates directly in the launcher.
-- **Advanced Settings:** 
-  - **RAM Allocation:** Dynamic memory control via slider.
-  - **Theming:** Support for Midnight, Dark, and Light themes.
-  - **Custom Paths:** Flexibility to change the Minecraft installation directory.
-- **Auto-Update:** Automatic version checking and background updating via GitHub Releases.
-- **News & Mods:** Mojang news feed and Modrinth mod discovery.
+## Project Overview
 
-## Technical Details
 - **Tech Stack:** C#, .NET 9.0, Avalonia UI, CmlLib.Core.
-- **Assets:** Custom SVG-to-PNG workflow for high-quality, lightweight icons.
-- **Persistence:** Config and accounts stored in local JSON files.
+- **Architecture:** Service-oriented design with dedicated logic for Settings (YAML), Security (JWT/Tokens), and UI management.
+- **UI Paradigm:** Sidebar-based navigation with a custom notification system and an integrated branding sequence.
 
-## Building and Running
+## Key Services & Files
+
+### Configuration & Data
+- **`Settings.yaml`**: The primary configuration for core launcher requirements (API endpoints, versioning). Handled by `SettingsService.cs`.
+- **`config.json`**: UI-specific and user settings (RAM, Themes, Experimental UI toggle).
+- **`accounts.json`**: Persistent storage for offline Minecraft sessions.
+- **`Tokens.json`**: Encrypted security payload containing HWID and process metadata. Handled by `SecurityService.cs`.
+
+### Core Features
+- **Auto-Update:** Checks GitHub Releases on startup, downloads updates to `cache/updates/`, and uses `updater.ps1` for delayed replacement.
+- **News & Changelogs:** Native parsing of Mojang's `news.json` with a robust fallback mechanism.
+- **Modloaders:** UI skeleton for Forge and Fabric integration via `CmlLib.Core.Installer`.
+- **Notifications:** Custom-built transient UI overlays for real-time user feedback.
+
+## Developer Guidelines
+
+### UI Modifications
+- **Namespace:** Use `using:WebView.Avalonia` for web content (though currently opening in system browser for stability).
+- **Theming:** Default theme is "Midnight". Transitions are handled via `MainWindow.axaml.cs`.
+- **Experimental UI:** Scrapped concepts live in `ExperimentalMainWindow.axaml`. Do not use for stable production features.
+
+### Security & Reliability
+- **SecurityService:** Should never be a single point of failure. Always wrap in try-catch and notify user of non-critical failures.
+- **Logging:** Use the internal `Log()` and `LogError()` methods which write to `MidnightLauncherLogs.txt`.
+
+## Building and Deployment
 - **Build:** `dotnet build`
-- **Run:** `dotnet run`
-- **Release:** Automated MSI/ZIP generation via GitHub Actions.
-
-
-
+- **Release:** GitHub Actions (`release.yml`) handles automated MSI (WiX 4) and ZIP generation with SHA-256 checksums.

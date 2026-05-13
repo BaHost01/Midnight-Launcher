@@ -42,7 +42,8 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            LogError("Failed to initialize Settings/Security services", ex);
+            LogError("Failed to initialize Security tokens", ex);
+            ShowNotification("Security Warning", "Could not generate session tokens. Security features may be limited.", true);
         }
         
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "MidnightLauncher");
