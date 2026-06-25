@@ -16,16 +16,14 @@ public enum LogLevel
 
 public static class LoggingService
 {
-    private static readonly string LogFolder = "logs";
-    private static readonly string LogFile = Path.Combine(LogFolder, $"launcher_{DateTime.Now:yyyy-MM-dd}.log");
+    private static readonly string LogFile = Path.Combine(LauncherPaths.LogsDirectory, $"launcher_{DateTime.Now:yyyy-MM-dd}.log");
     private static readonly object _lock = new object();
 
     static LoggingService()
     {
         try
         {
-            if (!Directory.Exists(LogFolder))
-                Directory.CreateDirectory(LogFolder);
+            LauncherPaths.Ensure();
 
             // Initialize log with system info
             var header = new StringBuilder();

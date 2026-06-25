@@ -9,18 +9,21 @@ public class LauncherConfig
     public bool ExperimentalUi { get; set; } = false;
     public int SelectedRam { get; set; } = 4096;
     public string Theme { get; set; } = "Midnight";
-    public string GamePath { get; set; } = "./game";
+    public string GamePath { get; set; } = LauncherPaths.GameDirectory;
 }
 
 public static class ConfigService
 {
-    private static readonly string ConfigPath = "config.json";
-
     public static LauncherConfig Load()
     {
-        if (!File.Exists(ConfigPath))
+        LauncherPaths.Ensure();
+
+        if (!File.Exists(LauncherPaths.ConfigPath))
         {
-            var defaultConfig = new LauncherConfig();
+            var defaultConfig = new LauncherConfig
+            {
+                GamePath = LauncherPaths.GameDirectory
+            };
             
             // Auto-detect .minecraft in AppData
             try
@@ -44,13 +47,16 @@ public static class ConfigService
 
         try
         {
-            var json = File.ReadAllText(ConfigPath);
-            return JsonConvert.DeserializeObject<LauncherConfig>(json) ?? new LauncherConfig();
+            var json = File.ReadAllText(LauncherPaths.ConfigPath);
+            var config = JsonConvert.DeserializeObject<LauncherConfig>(json) ?? new LauncherConfig();
+            if (string.IsNullOrWhiteSpace(config.GamePath))
+                config.GamePath = LauncherPaths.GameDirectory;
+            return config;
         }
         catch (Exception ex)
         {
             LoggingService.Error("Failed to load config, using defaults", ex);
-            return new LauncherConfig();
+            return new LauncherConfig { GamePath = LauncherPaths.GameDirectory };
         }
     }
 
@@ -58,8 +64,9 @@ public static class ConfigService
     {
         try
         {
+            LauncherPaths.Ensure();
             var json = JsonConvert.SerializeObject(config, Formatting.Indented);
-            File.WriteAllText(ConfigPath, json);
+            File.WriteAllText(LauncherPaths.ConfigPath, json);
         }
         catch (Exception ex)
         {

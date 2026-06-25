@@ -1,6 +1,5 @@
 using Avalonia;
 using System;
-using Avalonia.WebView;
 
 namespace Midnight_Launcher;
 

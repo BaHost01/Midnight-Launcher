@@ -12,13 +12,13 @@ namespace Midnight_Launcher;
 
 public class SecurityService
 {
-    private static readonly string TokensPath = "Tokens.json";
     private static readonly string SecretKey = "MidnightLauncherSecretKeyForSecurity_CStudioss"; // In production, this should be more secure
 
     public static void GenerateTokens(string version)
     {
         try
         {
+            LauncherPaths.Ensure();
             var hwid = GetHWID();
             var windowsProc = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
 
@@ -44,7 +44,7 @@ public class SecurityService
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
             
             var payload = new { encrypted_data = tokenString };
-            File.WriteAllText(TokensPath, JsonConvert.SerializeObject(payload, Formatting.Indented));
+            File.WriteAllText(LauncherPaths.TokensPath, JsonConvert.SerializeObject(payload, Formatting.Indented));
         }
         catch { }
     }

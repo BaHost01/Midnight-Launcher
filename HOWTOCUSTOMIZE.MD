@@ -12,20 +12,20 @@ Midnight Launcher uses **Avalonia UI** with the **Fluent Theme**.
 
 ## Game Settings
 ### Memory Allocation
-The launcher includes a slider in the **Settings** menu to adjust RAM allocation. These settings are persisted in `config.json`. You can also manually change the default in `ConfigService.cs`:
+The launcher includes a slider in the **Settings** menu to adjust RAM allocation. These settings are persisted in the per-user launcher config file. You can also manually change the default in `ConfigService.cs`:
 ```csharp
 public int SelectedRam { get; set; } = 4096;
 ```
 
 ### Game Path
-The game files are stored in the `./game` directory by default. You can change this via the **Settings** menu in the UI (which updates `config.json`) or by modifying `Settings.yaml`.
+The game files are stored in the launcher data directory by default. You can change this via the **Settings** menu in the UI or by modifying `LauncherConfig.GamePath` in `ConfigService.cs`.
 
 ## Configuration Files
 Midnight Launcher uses four main files for persistence:
 1. **`accounts.json`**: Stores your offline usernames.
-2. **`Settings.yaml`**: Advanced launcher settings (Update channels, API endpoints).
-3. **`config.json`**: User preferences like RAM allocation, UI Theme (Midnight/Dark/Light), and custom Game Paths.
-4. **`Tokens.json`**: Encrypted security tokens containing HWID and session metadata.
+2. **`Settings.yaml`**: Advanced launcher settings (update channels, API endpoints).
+3. **`config.json`**: User preferences like RAM allocation, UI theme, and custom game paths.
+4. **`Tokens.json`**: Local security tokens containing HWID and session metadata.
 
 ## Security Features
 The launcher generates a unique **HWID** (Hardware ID) to secure your local tokens. If you copy the launcher to a different PC, the `Tokens.json` will need to be regenerated to ensure security.
@@ -43,4 +43,3 @@ To permanently clear flags for your users, you should submit the `.exe` or `.msi
 - **Microsoft Security Intelligence:** [Submit Here](https://www.microsoft.com/en-us/wdsi/filesubmission) (Select "Developer" and "Incorrectly detected as malware").
 - **VirusTotal:** Upload your file to [VirusTotal](https://www.virustotal.com/) to see which engines flag it and use their contact forms to report false positives.
 - **Norton/Avast/etc:** Each major vendor has a "False Positive Submission" form on their website.
-

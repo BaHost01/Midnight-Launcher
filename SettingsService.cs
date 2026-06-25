@@ -22,7 +22,6 @@ public class SettingsYaml
 
 public class SettingsService
 {
-    private static readonly string SettingsPath = "Settings.yaml";
     private static readonly ISerializer Serializer = new SerializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .Build();
@@ -33,7 +32,9 @@ public class SettingsService
 
     public static SettingsYaml Load()
     {
-        if (!File.Exists(SettingsPath))
+        LauncherPaths.Ensure();
+
+        if (!File.Exists(LauncherPaths.SettingsPath))
         {
             var defaultSettings = new SettingsYaml();
             Save(defaultSettings);
@@ -42,7 +43,7 @@ public class SettingsService
 
         try
         {
-            var yaml = File.ReadAllText(SettingsPath);
+            var yaml = File.ReadAllText(LauncherPaths.SettingsPath);
             return Deserializer.Deserialize<SettingsYaml>(yaml);
         }
         catch
@@ -55,8 +56,9 @@ public class SettingsService
     {
         try
         {
+            LauncherPaths.Ensure();
             var yaml = Serializer.Serialize(settings);
-            File.WriteAllText(SettingsPath, yaml);
+            File.WriteAllText(LauncherPaths.SettingsPath, yaml);
         }
         catch { }
     }
